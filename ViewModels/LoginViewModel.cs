@@ -51,13 +51,18 @@ namespace MyProgram.ViewModels
             GoToRegisterCommand = new DelegateCommand(() =>
                 _regionManager.RequestNavigate("ContentRegion", "RegisterView"));
 
-            // 初始化时加载背景图
-            LoadBackground();
             // 确保数据库已创建
             _dbContext.Database.EnsureCreated();
         }
 
-        private async void LoadBackground()
+        public async void OnNavigatedTo(NavigationContext navigationContext)
+        {
+            // 初始化时加载背景图
+            await LoadBackgroundAsync();
+        }
+
+        // 异步加载背景
+        private async Task LoadBackgroundAsync()
         {
             BackgroundImageSource = await _imageService.GetTodaysBackgroundAsync();
             RaisePropertyChanged(nameof(BackgroundImageSource));
@@ -91,7 +96,6 @@ namespace MyProgram.ViewModels
             _regionManager.RequestNavigate("ContentRegion", "DashboardView");
         }
 
-        public void OnNavigatedTo(NavigationContext navigationContext) { }
         public bool IsNavigationTarget(NavigationContext navigationContext) => true;
         public void OnNavigatedFrom(NavigationContext navigationContext) { }
     }
