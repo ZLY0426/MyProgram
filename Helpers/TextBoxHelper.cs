@@ -1,5 +1,7 @@
-﻿using System.Windows;
+﻿using System.Globalization;
+using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Documents;
 using System.Windows.Media;
 
 namespace MyProgram.Helpers
@@ -7,51 +9,122 @@ namespace MyProgram.Helpers
     public static class TextBoxHelper
     {
         public static readonly DependencyProperty PlaceholderTextProperty =
-            DependencyProperty.RegisterAttached(
-                "PlaceholderText",
-                typeof(string),
-                typeof(TextBoxHelper),
-                new PropertyMetadata(string.Empty, OnPlaceholderChanged));
+            DependencyProperty.RegisterAttached("PlaceholderText", typeof(string), typeof(TextBoxHelper),
+                new PropertyMetadata(string.Empty, OnPlaceholderTextChanged));
 
-        public static string GetPlaceholderText(DependencyObject obj) =>
-            (string)obj.GetValue(PlaceholderTextProperty);
+        public static string GetPlaceholderText(DependencyObject obj) => (string)obj.GetValue(PlaceholderTextProperty);
+        public static void SetPlaceholderText(DependencyObject obj, string value) => obj.SetValue(PlaceholderTextProperty, value);
 
-        public static void SetPlaceholderText(DependencyObject obj, string value) =>
-            obj.SetValue(PlaceholderTextProperty, value);
-
-        private static void OnPlaceholderChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        private static void OnPlaceholderTextChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
-            if (d is TextBox textBox)
+            if (d is Control control)
             {
-                textBox.GotFocus -= OnTextBoxGotFocus;
-                textBox.LostFocus -= OnTextBoxLostFocus;
-                textBox.GotFocus += OnTextBoxGotFocus;
-                textBox.LostFocus += OnTextBoxLostFocus;
+                control.Loaded -= Control_Loaded;
+                control.Loaded += Control_Loaded;
 
-                // 初始加载时设置
-                if (string.IsNullOrEmpty(textBox.Text))
+                if (control.IsLoaded)
+                    AddAdorner(control);
+            }
+        }
+
+        private static void Control_Loaded(object sender, RoutedEventArgs e)
+        {
+            if (sender is Control control)
+                AddAdorner(control);
+        }
+
+        private static void AddAdorner(Control control)
+        {
+            var layer = AdornerLayer.GetAdornerLayer(control);
+            if (layer == null) return;
+
+            // 移除旧的相同装饰器
+            var existing = layer.GetAdorners(control);
+            if (existing != null)
+                foreach (var adorner in existing)
+                    if (adorner is WatermarkAdorner)
+                        layer.Remove(adorner);
+
+            layer.Add(new WatermarkAdorner(control, GetPlaceholderText(control)));
+        }
+
+        private class WatermarkAdorner : Adorner
+        {
+            private readonly string _placeholder;
+
+            public WatermarkAdorner(UIElement adornedElement, string placeholder) : base(adornedElement)
+            {
+                _placeholder = placeholder;
+                IsHitTestVisible = false;
+
+                if (adornedElement is TextBox tb)
                 {
-                    textBox.Text = (string)e.NewValue;
-                    textBox.Foreground = Brushes.Gray;
+                    tb.TextChanged += OnTextOrFocusChanged;
+                    tb.GotFocus += OnTextOrFocusChanged;
+                    tb.LostFocus += OnTextOrFocusChanged;
+                    tb.Unloaded += OnAdornedElementUnloaded;   
+                }
+                else if (adornedElement is ComboBox cb)
+                {
+                    cb.SelectionChanged += OnSelectionChanged;
+                    cb.GotFocus += OnTextOrFocusChanged;
+                    cb.LostFocus += OnTextOrFocusChanged;
+                    cb.Unloaded += OnAdornedElementUnloaded;   0
                 }
             }
-        }
 
-        private static void OnTextBoxGotFocus(object sender, RoutedEventArgs e)
-        {
-            if (sender is TextBox tb && tb.Text == GetPlaceholderText(tb))
+            private void OnSelectionChanged(object sender, SelectionChangedEventArgs e) => InvalidateVisual();
+
+            private void OnTextOrFocusChanged(object sender, RoutedEventArgs e) => InvalidateVisual();
+
+            private void OnAdornedElementUnloaded(object sender, RoutedEventArgs e)
             {
-                tb.Text = string.Empty;
-                tb.Foreground = Brushes.Black;
+                if (AdornedElement is not Control control) return;
+
+                if (control is TextBox tb)
+                {
+                    tb.TextChanged -= OnTextOrFocusChanged;
+                    tb.GotFocus -= OnTextOrFocusChanged;
+                    tb.LostFocus -= OnTextOrFocusChanged;
+                    tb.Unloaded -= OnAdornedElementUnloaded;
+                }
+                else if (control is ComboBox cb)
+                {
+                    cb.SelectionChanged -= OnSelectionChanged;
+                    cb.GotFocus -= OnTextOrFocusChanged;
+                    cb.LostFocus -= OnTextOrFocusChanged;
+                    cb.Unloaded -= OnAdornedElementUnloaded;
+                }
+
+                var layer = AdornerLayer.GetAdornerLayer(control);
+                layer?.Remove(this);
             }
-        }
 
-        private static void OnTextBoxLostFocus(object sender, RoutedEventArgs e)
-        {
-            if (sender is TextBox tb && string.IsNullOrEmpty(tb.Text))
+            protected override void OnRender(DrawingContext drawingContext)
             {
-                tb.Text = GetPlaceholderText(tb);
-                tb.Foreground = Brushes.Gray;
+                var adorned = AdornedElement as Control;
+                if (adorned == null || string.IsNullOrEmpty(_placeholder)) return;
+
+                bool shouldShow = false;
+                if (adorned is TextBox tb)
+                    shouldShow = string.IsNullOrEmpty(tb.Text) && !tb.IsFocused;
+                else if (adorned is ComboBox cb)
+                    shouldShow = string.IsNullOrEmpty(cb.Text) && !cb.IsFocused;
+
+                if (!shouldShow) return;
+
+                // 绘制灰色提示文字
+                var foreground = new SolidColorBrush(Colors.Gray);
+                var typeface = new Typeface(adorned.FontFamily, adorned.FontStyle,
+                                            adorned.FontWeight, adorned.FontStretch);
+                var formattedText = new FormattedText(_placeholder, CultureInfo.CurrentCulture,
+                    FlowDirection.LeftToRight, typeface, adorned.FontSize, foreground,
+                    VisualTreeHelper.GetDpi(this).PixelsPerDip);
+
+                // 简单偏移，实际可根据 Padding 调整
+                double left = adorned.Padding.Left;
+                double top = (adorned.ActualHeight - formattedText.Height) / 2;
+                drawingContext.DrawText(formattedText, new Point(left, top));
             }
         }
     }

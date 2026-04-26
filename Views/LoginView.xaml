@@ -66,6 +66,7 @@
                         <PasswordBox Margin="0,25,0,0" 
                                      Style="{StaticResource ModernPasswordBoxStyle}"
                                      helpers:PasswordHelper.Attach="True"
+                                     helpers:PasswordHelper.PlaceholderText="请输入密码"
                                      helpers:PasswordHelper.Password="{Binding Password, UpdateSourceTrigger=PropertyChanged,Mode=TwoWay}"
                                      MinHeight="50"
                                      FontSize="16"/>
