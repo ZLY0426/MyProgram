@@ -15,7 +15,6 @@ namespace MyProgram.ViewModels
         private readonly IPasswordService _passwordService;
         private readonly IDailyImageService _imageService;
         private readonly AppDbContext _dbContext;
-
         // 绑定属性
         private string _username = string.Empty;
         public string Username
@@ -23,7 +22,7 @@ namespace MyProgram.ViewModels
             get => _username;
             set => SetProperty(ref _username, value);
         }
-
+        
         private string _password = string.Empty;
         public string Password
         {
@@ -49,8 +48,7 @@ namespace MyProgram.ViewModels
 
             LoginCommand = new DelegateCommand(ExecuteLogin);
             GoToRegisterCommand = new DelegateCommand(() =>
-                _regionManager.RequestNavigate("ContentRegion", "RegisterView"));
-
+                            _regionManager.RequestNavigate("ContentRegion", "RegisterView"));
             // 确保数据库已创建
             _dbContext.Database.EnsureCreated();
         }

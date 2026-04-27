@@ -3,9 +3,10 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:prism="http://prismlibrary.com/"
         Title="工业物联网监控系统" Height="Auto" Width="Auto"
+        xmlns:local="clr-namespace:MyProgram.CustomControl"
         WindowStartupLocation="CenterScreen">
     <Grid>
         <!-- 核心区域：所有页面切换都在这里发生 -->
-        <ContentControl prism:RegionManager.RegionName="ContentRegion" />
+        <local:AnimatedContentControl prism:RegionManager.RegionName="ContentRegion" />
     </Grid>
 </Window>

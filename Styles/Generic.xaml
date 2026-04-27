@@ -124,4 +124,33 @@
             </Setter.Value>
         </Setter>
     </Style>
+
+    <!-- 为 AnimatedContentControl 提供默认样式 -->
+    <Style TargetType="{x:Type local:AnimatedContentControl}">
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="{x:Type local:AnimatedContentControl}">
+                    <Grid Background="{TemplateBinding Background}">
+                        <!-- 旧内容层（先显示，后滑出） -->
+                        <ContentPresenter 
+                            x:Name="OldContentPresenter"
+                            Content="{TemplateBinding Content}">
+                            <ContentPresenter.RenderTransform>
+                                <TranslateTransform X="0" Y="0"/>
+                            </ContentPresenter.RenderTransform>
+                        </ContentPresenter>
+
+                        <!-- 新内容层（后显示，滑入） -->
+                        <ContentPresenter 
+                            x:Name="NewContentPresenter">
+                            <ContentPresenter.RenderTransform>
+                                <TranslateTransform X="0" Y="0"/>
+                            </ContentPresenter.RenderTransform>
+                        </ContentPresenter>
+                    </Grid>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
 </ResourceDictionary>

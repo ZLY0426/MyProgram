@@ -69,7 +69,7 @@ namespace MyProgram.Helpers
                     cb.SelectionChanged += OnSelectionChanged;
                     cb.GotFocus += OnTextOrFocusChanged;
                     cb.LostFocus += OnTextOrFocusChanged;
-                    cb.Unloaded += OnAdornedElementUnloaded;   0
+                    cb.Unloaded += OnAdornedElementUnloaded;   
                 }
             }
 

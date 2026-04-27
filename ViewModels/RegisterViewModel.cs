@@ -9,7 +9,7 @@ using System.Windows.Media.Imaging;
 
 namespace MyProgram.ViewModels
 {
-    public class RegisterViewModel : BindableBase, INavigationAware
+    public class RegisterViewModel : BindableBase
     {
         private readonly IRegionManager _regionManager;
         private readonly IPasswordService _passwordService;
@@ -43,7 +43,7 @@ namespace MyProgram.ViewModels
         // 命令
         public DelegateCommand RegisterCommand { get; }
         public DelegateCommand GoToLoginCommand { get; }
-
+        public DelegateCommand LoadImageCommand { get; }
         public RegisterViewModel(IRegionManager regionManager,
                                IPasswordService passwordService,
                                IDailyImageService imageService,
@@ -57,16 +57,11 @@ namespace MyProgram.ViewModels
             RegisterCommand = new DelegateCommand(ExecuteRegister);
             GoToLoginCommand = new DelegateCommand(() =>
                 _regionManager.RequestNavigate("ContentRegion", "LoginView"));
-
+            LoadImageCommand = new DelegateCommand(async() => await LoadBackgroundAsync());
             // 确保数据库已创建
             _dbContext.Database.EnsureCreated();
         }
-        // 导航到注册页面时，自动调用这里 ✅
-        public async void OnNavigatedTo(NavigationContext navigationContext)
-        {
-            // 初始化时加载背景图
-            await LoadBackgroundAsync();
-        }
+
 
         // 异步加载背景
         private async Task LoadBackgroundAsync()
@@ -116,5 +111,6 @@ namespace MyProgram.ViewModels
 
         public bool IsNavigationTarget(NavigationContext navigationContext) => true;
         public void OnNavigatedFrom(NavigationContext navigationContext) { }
+
     }
 }

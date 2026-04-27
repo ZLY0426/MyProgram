@@ -4,10 +4,17 @@
              xmlns:local="clr-namespace:MyProgram.Views"
              xmlns:helpers="clr-namespace:MyProgram.Helpers"
              xmlns:prism="http://prismlibrary.com/"
+             xmlns:i="http://schemas.microsoft.com/xaml/behaviors"
              prism:ViewModelLocator.AutoWireViewModel="True">
+
+    <i:Interaction.Triggers>
+        <i:EventTrigger EventName="Loaded">
+            <i:InvokeCommandAction Command="{Binding LoadImageCommand}" />
+        </i:EventTrigger>
+    </i:Interaction.Triggers>
     <Grid>
         <!-- 背景图 (代码后台设置) -->
-        <Image x:Name="BackgroundImage" Stretch="UniformToFill" />
+        <Image x:Name="BackgroundImage" Source="{Binding BackgroundImageSource}" Stretch="UniformToFill" />
 
         <!-- 半透明遮罩 -->
         <Grid Background="#80000000">
