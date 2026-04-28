@@ -1,0 +1,29 @@
+﻿<UserControl x:Class="MyProgram.Views.DashboardView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:MyProgram.Views"
+             mc:Ignorable="d" 
+             d:DesignHeight="450" d:DesignWidth="800">
+    <Grid>
+        <!-- 直接使用 TabControl，简单、粗暴、好用 -->
+        <TabControl>
+            <!-- Tab 1: Modbus RTU -->
+            <TabItem Header="Modbus RTU">
+                <!-- 直接把 View 放在这里，ViewModel 会通过 Prism 自动绑定 -->
+                <local:ModbusRtuView />
+            </TabItem>
+
+            <!-- Tab 2: Modbus TCP -->
+            <TabItem Header="Modbus TCP">
+                <local:ModbusTcpView />
+            </TabItem>
+
+            <!-- Tab 3: 运行日志 -->
+            <TabItem Header="运行日志">
+                <local:LogView />
+            </TabItem>
+        </TabControl>
+    </Grid>
+</UserControl>

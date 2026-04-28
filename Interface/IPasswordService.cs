@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace MyProgram.Services
+namespace MyProgram.Interface
 {
     public interface IPasswordService
     {

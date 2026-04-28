@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using System.Windows.Media.Imaging;
 
-namespace MyProgram.Services
+namespace MyProgram.Interface
 {
     public interface IDailyImageService
     {

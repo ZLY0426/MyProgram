@@ -1,4 +1,5 @@
 using MyProgram.Data;
+using MyProgram.Interface;
 using MyProgram.Services;
 using MyProgram.Views;
 using Prism.Ioc;
@@ -23,11 +24,15 @@ namespace MyProgram
         {
             containerRegistry.Register<IPasswordService, PasswordService>();
             containerRegistry.Register<IDailyImageService, DailyImageService>();
+            containerRegistry.Register<ILogService, LogService>();
+
             containerRegistry.Register<AppDbContext>();
 
             containerRegistry.RegisterForNavigation<LoginView>();
             containerRegistry.RegisterForNavigation<RegisterView>();
-           
+            containerRegistry.RegisterForNavigation<DashboardView>();
+            containerRegistry.RegisterForNavigation<LogView>();
+
         }
 
         protected override void ConfigureModuleCatalog(IModuleCatalog moduleCatalog)

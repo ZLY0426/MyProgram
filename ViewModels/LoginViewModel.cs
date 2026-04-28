@@ -1,5 +1,5 @@
-﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using MyProgram.Data;
-using MyProgram.Services;
+﻿using MyProgram.Data;
+using MyProgram.Interface;
 using Prism.Commands;
 using Prism.Mvvm;
 using Prism.Navigation.Regions;
