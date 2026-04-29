@@ -70,5 +70,52 @@ namespace MyProgram.Services
                 };
             }
         }
+        public async Task<PagedResult<LogEntry>> SearchLogsAsync(string searchType, string searchValue, int pageIndex, int pageSize)
+        {
+            using (var context = new AppDbContext())
+            {
+                IQueryable<LogEntry> query = context.Logs;
+
+                if (!string.IsNullOrWhiteSpace(searchValue))
+                {
+                    switch (searchType)
+                    {
+                        case "时间":
+                            if (DateTime.TryParse(searchValue, out DateTime searchDate))
+                            {
+                                query = query.Where(l => l.Timestamp.Date == searchDate.Date);
+                            }
+                            break;
+
+                        case "用户ID":
+                            if (int.TryParse(searchValue, out int userId))
+                            {
+                                query = query.Where(l => l.UserId == userId);
+                            }
+                            break;
+
+                        case "用户名":
+                            query = query.Where(l => l.Username.Contains(searchValue));
+                            break;
+                    }
+                }
+
+                var totalCount = await query.CountAsync();
+                var totalPages = (int)Math.Ceiling((double)totalCount / pageSize);
+
+                var items = await query
+                    .OrderByDescending(l => l.Timestamp)
+                    .Skip((pageIndex - 1) * pageSize)
+                    .Take(pageSize)
+                    .ToListAsync();
+
+                return new PagedResult<LogEntry>
+                {
+                    Items = items,
+                    TotalCount = totalCount,
+                    TotalPages = totalPages
+                };
+            }
+        }
     }
 }

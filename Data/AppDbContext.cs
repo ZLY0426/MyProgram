@@ -30,9 +30,17 @@ namespace MyProgram.Data
         }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            // 配置 UserId 为主键（虽然上面已经有 [Key]，这里显式配置更保险）
+            // 1. 给 Timestamp 加索引：排序和按时间搜索会非常快
             modelBuilder.Entity<LogEntry>()
-                .HasKey(l => l.LogId);
+                .HasIndex(l => l.Timestamp);
+
+            // 2. 给 UserId 加索引：按用户ID搜索会非常快
+            modelBuilder.Entity<LogEntry>()
+                .HasIndex(l => l.UserId);
+
+            // 3. 给 Username 加索引：注意：这只能加速 "LIKE 'abc%'"，不能加速 "LIKE '%abc%'"
+            modelBuilder.Entity<LogEntry>()
+                .HasIndex(l => l.Username);
         }
     }
 }

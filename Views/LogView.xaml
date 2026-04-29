@@ -10,7 +10,6 @@
              mc:Ignorable="d"
              d:DesignHeight="600" d:DesignWidth="1000">
     <UserControl.Resources>
-        <!-- 全局单元格居中样式：所有列统一使用 -->
         <Style x:Key="DataGridCellCenterStyle" TargetType="TextBlock">
             <Setter Property="VerticalAlignment" Value="Center"/>
             <Setter Property="HorizontalAlignment" Value="Center"/>
@@ -23,6 +22,9 @@
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
             <RowDefinition Height="Auto"/>
+            <!-- 搜索栏 -->
+            <RowDefinition Height="Auto"/>
+            <!-- 分页栏 -->
         </Grid.RowDefinitions>
 
         <!-- 1. 标题 -->
@@ -33,7 +35,7 @@
             FontWeight="Bold" 
             Margin="0,0,0,20"/>
 
-        <!-- 2. 数据表格 -->
+        <!-- 2. 自定义 FillDataGrid -->
         <controls:FillDataGrid 
             Grid.Row="1"
             ItemsSource="{Binding Logs}" 
@@ -51,6 +53,7 @@
             HorizontalGridLinesBrush="#D0D0D0"
             VerticalGridLinesBrush="#D0D0D0"
             AlternatingRowBackground="#F9F9F9"
+            RowHeaderWidth="0"
             RowHeight="35">
 
             <controls:FillDataGrid.ColumnHeaderStyle>
@@ -73,35 +76,26 @@
             </controls:FillDataGrid.CellStyle>
 
             <controls:FillDataGrid.Columns>
-                <!-- 日志ID: 权重 0.2 居中对齐 -->
                 <DataGridTextColumn 
                     Header="日志ID" 
                     Binding="{Binding LogId}" 
                     Width="0.2*"
                     ElementStyle="{StaticResource DataGridCellCenterStyle}"/>
-
-                <!-- 用户ID: 权重 0.2 居中对齐 -->
                 <DataGridTextColumn 
                     Header="用户ID" 
                     Binding="{Binding UserId, StringFormat='{}{0:D8}'}" 
                     Width="0.2*"
                     ElementStyle="{StaticResource DataGridCellCenterStyle}"/>
-
-                <!-- 用户名: 权重 0.1 居中对齐（核心修改） -->
                 <DataGridTextColumn 
                     Header="用户名" 
                     Binding="{Binding Username}" 
                     Width="0.1*"
                     ElementStyle="{StaticResource DataGridCellCenterStyle}"/>
-
-                <!-- 用户行为: 权重 0.4 居中对齐（核心修改） -->
                 <DataGridTextColumn 
                     Header="用户行为" 
                     Binding="{Binding Action}" 
                     Width="0.4*"
                     ElementStyle="{StaticResource DataGridCellCenterStyle}"/>
-
-                <!-- 时间戳: 权重 0.2 居中对齐 -->
                 <DataGridTextColumn 
                     Header="时间戳" 
                     Binding="{Binding Timestamp, StringFormat='yyyy-MM-dd HH:mm:ss'}" 
@@ -110,8 +104,8 @@
             </controls:FillDataGrid.Columns>
         </controls:FillDataGrid>
 
-        <!-- 3. 底部分页栏 -->
-        <Border Grid.Row="2" Margin="0,20,0,0" Padding="15,10" Background="#F5F5F5" CornerRadius="4" BorderThickness="1" BorderBrush="#E0E0E0">
+        <!-- 3. 新增：搜索栏 -->
+        <Border Grid.Row="2" Margin="0,15,0,0" Padding="10" Background="#F8F8F8" CornerRadius="4" BorderThickness="1" BorderBrush="#E0E0E0">
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="Auto"/>
@@ -119,11 +113,75 @@
                     <ColumnDefinition Width="Auto"/>
                 </Grid.ColumnDefinitions>
 
-                <Button 
+                <!-- 搜索类型下拉框 -->
+                <ComboBox 
                     Grid.Column="0"
-                    Content="上一页" 
-                    Command="{Binding PrevPageCommand}"
-                    Width="90" Height="32"/>
+                    ItemsSource="{Binding SearchTypes}"
+                    SelectedItem="{Binding SelectedSearchType}"
+                    Width="120"
+                    Height="32"
+                    Margin="0,0,10,0"
+                    VerticalContentAlignment="Center"
+                    HorizontalContentAlignment="Center"/>
+
+                <!-- 输入框 + 搜索按钮 -->
+                <Grid Grid.Column="1">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+
+                    <TextBox 
+                        Grid.Column="0"
+                        Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}"
+                        Height="32"
+                        Padding="8,0"
+                        VerticalContentAlignment="Center">
+                        <i:Interaction.Triggers>
+                            <!-- 直接使用 KeyTrigger，监听 KeyDown 事件 -->
+                            <i:KeyTrigger Key="Return">
+                                <i:InvokeCommandAction Command="{Binding SearchCommand}"/>
+                            </i:KeyTrigger>
+                        </i:Interaction.Triggers>
+                    </TextBox>
+
+                    <!-- 搜索按钮 (矢量图标) -->
+                    <Button 
+                        Grid.Column="1"
+                        Command="{Binding SearchCommand}"
+                        Width="40"
+                        Height="32"
+                        Margin="5,0,0,0"
+                        Padding="0">
+                        <Viewbox Width="18" Height="18">
+                            <Path Data="M11,11H6.9L6.19,10.29C6.74,9.59 7,8.79 7,8C7,5.24 4.76,3 2,3S-3,5.24-3,8S-0.24,13 2.5,13C3.29,13 4.09,12.75 4.79,12.21L5.5,12.91V17L11,11ZM2,11C0.34,11-1,9.66-1,8S0.34,5 2,5 5,6.34 5,8 3.66,11 2,11Z" 
+                                  Fill="#333333"
+                                  Stretch="Uniform"/>
+                        </Viewbox>
+                    </Button>
+                </Grid>
+
+                <!-- 取消查找按钮 -->
+                <Button 
+                    Grid.Column="2"
+                    Content="取消查找"
+                    Command="{Binding CancelSearchCommand}"
+                    Width="90"
+                    Height="32"
+                    Margin="10,0,0,0"/>
+            </Grid>
+        </Border>
+
+        <!-- 4. 底部分页栏 -->
+        <Border Grid.Row="3" Margin="0,15,0,0" Padding="15,10" Background="#F5F5F5" CornerRadius="4" BorderThickness="1" BorderBrush="#E0E0E0">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+
+                <Button Grid.Column="0" Content="上一页" Command="{Binding PrevPageCommand}" Width="90" Height="32"/>
 
                 <StackPanel Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Center">
                     <TextBlock Text="当前页: " VerticalAlignment="Center"/>
@@ -132,11 +190,7 @@
                     <TextBlock Text="{Binding TotalPages}" VerticalAlignment="Center"/>
                 </StackPanel>
 
-                <Button 
-                    Grid.Column="2"
-                    Content="下一页" 
-                    Command="{Binding NextPageCommand}"
-                    Width="90" Height="32"/>
+                <Button Grid.Column="2" Content="下一页" Command="{Binding NextPageCommand}" Width="90" Height="32"/>
             </Grid>
         </Border>
 
