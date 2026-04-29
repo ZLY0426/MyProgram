@@ -1,5 +1,6 @@
 ﻿using MyProgram.Data;
 using MyProgram.Interface;
+using MyProgram.Services;
 using Prism.Commands;
 using Prism.Mvvm;
 using Prism.Navigation.Regions;
@@ -14,6 +15,8 @@ namespace MyProgram.ViewModels
         private readonly IRegionManager _regionManager;
         private readonly IPasswordService _passwordService;
         private readonly IDailyImageService _imageService;
+        private readonly ICurrentUserService _currentUserService;
+        private readonly ILogService _logService;
         private readonly AppDbContext _dbContext;
         // 绑定属性
         private string _username = string.Empty;
@@ -39,14 +42,18 @@ namespace MyProgram.ViewModels
         public LoginViewModel(IRegionManager regionManager,
                              IPasswordService passwordService,
                              IDailyImageService imageService,
+                             ICurrentUserService currentUserService,
+                             ILogService logService,
                              AppDbContext dbContext)
         {
             _regionManager = regionManager;
             _passwordService = passwordService;
             _imageService = imageService;
+            _currentUserService = currentUserService;
+            _logService = logService;
             _dbContext = dbContext;
 
-            LoginCommand = new DelegateCommand(ExecuteLogin);
+            LoginCommand = new DelegateCommand(async()=> { await ExecuteLoginAsync(); });
             GoToRegisterCommand = new DelegateCommand(() =>
                             _regionManager.RequestNavigate("ContentRegion", "RegisterView"));
             // 确保数据库已创建
@@ -66,7 +73,7 @@ namespace MyProgram.ViewModels
             RaisePropertyChanged(nameof(BackgroundImageSource));
         }
 
-        private void ExecuteLogin()
+        private async Task ExecuteLoginAsync()
         {
             // 1. 简单验证
             if (string.IsNullOrWhiteSpace(Username) || string.IsNullOrWhiteSpace(Password))
@@ -91,6 +98,9 @@ namespace MyProgram.ViewModels
             }
 
             // 4. 登录成功
+            _currentUserService.UserId = user.UserId;
+            _currentUserService.Username = user.Username;
+            await _logService.LogAsync(user.UserId, user.Username, "登入上位机程序");
             _regionManager.RequestNavigate("ContentRegion", "DashboardView");
         }
 

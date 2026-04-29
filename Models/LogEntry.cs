@@ -6,15 +6,19 @@ namespace MyProgram.Models
 {
     public class LogEntry
     {
-        // 将 UserId 设为主键
         [Key]
-        [DatabaseGenerated(DatabaseGeneratedOption.None)] // 关键：告诉 EF Core 我们要手动生成 ID，不由数据库自增
-        public long UserId { get; set; } // 使用 long 防止溢出
+        [DatabaseGenerated(DatabaseGeneratedOption.None)]
+        public int LogId { get; set; }
 
+        // 外键属性
+        [ForeignKey("User")]
+        public int UserId { get; set; }
+       
         public string Username { get; set; }
 
+        // 导航属性
+        public User User { get; set; }
         public string Action { get; set; }
-
         public DateTime Timestamp { get; set; }
     }
 }

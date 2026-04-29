@@ -11,28 +11,40 @@ namespace MyProgram.Services
 {
     public class LogService : ILogService
     {
+        // 定义起始 ID (2026050000 < 2^31-1，符合 int 范围)
+        private const int StartingLogId = 2026050000;
+
         public async Task LogAsync(int userId, string username, string action)
         {
             using (var context = new AppDbContext())
             {
-                long nextId;
-                // 注意：使用 FirstOrDefaultAsync
-                var maxId = await context.Logs
-                    .OrderByDescending(l => l.UserId)
+                // 1. 获取当前最大 LogId
+                int nextId;
+                // 注意：先按 LogId 倒序，再取第一条
+                var maxLog = await context.Logs
+                    .OrderByDescending(l => l.LogId)
                     .FirstOrDefaultAsync();
 
-                nextId = maxId == null ? AppDbContext.StartingUserId : maxId.UserId + 1;
+                if (maxLog == null)
+                {
+                    nextId = StartingLogId;
+                }
+                else
+                {
+                    nextId = maxLog.LogId + 1;
+                }
 
+                // 2. 创建新日志
                 var newLog = new LogEntry
                 {
-                    UserId = nextId,
+                    LogId = nextId,
+                    UserId = userId,
                     Username = username,
                     Action = action,
                     Timestamp = DateTime.Now
                 };
 
                 context.Logs.Add(newLog);
-                // 注意：使用 SaveChangesAsync
                 await context.SaveChangesAsync();
             }
         }
@@ -41,18 +53,15 @@ namespace MyProgram.Services
         {
             using (var context = new AppDbContext())
             {
-                // 1. 异步获取总数
                 var totalCount = await context.Logs.CountAsync();
                 var totalPages = (int)Math.Ceiling((double)totalCount / pageSize);
 
-                // 2. 异步获取分页数据
                 var items = await context.Logs
                     .OrderByDescending(l => l.Timestamp)
                     .Skip((pageIndex - 1) * pageSize)
                     .Take(pageSize)
                     .ToListAsync();
 
-                // 3. 返回包装好的结果
                 return new PagedResult<LogEntry>
                 {
                     Items = items,

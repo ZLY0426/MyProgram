@@ -5,17 +5,24 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:i="http://schemas.microsoft.com/xaml/behaviors"
              xmlns:prism="http://prismlibrary.com/"
+             xmlns:controls="clr-namespace:MyProgram.CustomControl"
              prism:ViewModelLocator.AutoWireViewModel="True"
              mc:Ignorable="d"
-             d:DesignHeight="600" d:DesignWidth="800">
+             d:DesignHeight="600" d:DesignWidth="1000">
+    <UserControl.Resources>
+        <!-- 全局单元格居中样式：所有列统一使用 -->
+        <Style x:Key="DataGridCellCenterStyle" TargetType="TextBlock">
+            <Setter Property="VerticalAlignment" Value="Center"/>
+            <Setter Property="HorizontalAlignment" Value="Center"/>
+            <Setter Property="Padding" Value="5,0"/>
+        </Style>
+    </UserControl.Resources>
+
     <Grid Margin="20">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
-            <!-- 标题 -->
             <RowDefinition Height="*"/>
-            <!-- 表格 -->
             <RowDefinition Height="Auto"/>
-            <!-- 分页栏 -->
         </Grid.RowDefinitions>
 
         <!-- 1. 标题 -->
@@ -27,47 +34,84 @@
             Margin="0,0,0,20"/>
 
         <!-- 2. 数据表格 -->
-        <DataGrid 
+        <controls:FillDataGrid 
             Grid.Row="1"
             ItemsSource="{Binding Logs}" 
             AutoGenerateColumns="False" 
             IsReadOnly="True" 
             CanUserAddRows="False"
             CanUserDeleteRows="False"
-            GridLinesVisibility="Horizontal"
+            CanUserResizeColumns="True"
+            CanUserSortColumns="True"
+            GridLinesVisibility="All"
             HeadersVisibility="Column"
-            RowHeight="30">
+            Background="White"
+            BorderThickness="1"
+            BorderBrush="#D0D0D0"
+            HorizontalGridLinesBrush="#D0D0D0"
+            VerticalGridLinesBrush="#D0D0D0"
+            AlternatingRowBackground="#F9F9F9"
+            RowHeight="35">
 
-            <DataGrid.Columns>
-                <!-- 用户ID: 权重 0.2 -->
+            <controls:FillDataGrid.ColumnHeaderStyle>
+                <Style TargetType="DataGridColumnHeader">
+                    <Setter Property="Background" Value="#ECECEC"/>
+                    <Setter Property="FontWeight" Value="Bold"/>
+                    <Setter Property="Padding" Value="0,8"/>
+                    <Setter Property="HorizontalContentAlignment" Value="Center"/>
+                    <Setter Property="BorderThickness" Value="0,0,1,1"/>
+                    <Setter Property="BorderBrush" Value="#D0D0D0"/>
+                </Style>
+            </controls:FillDataGrid.ColumnHeaderStyle>
+
+            <controls:FillDataGrid.CellStyle>
+                <Style TargetType="DataGridCell">
+                    <Setter Property="BorderThickness" Value="0,0,1,1"/>
+                    <Setter Property="BorderBrush" Value="#D0D0D0"/>
+                    <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
+                </Style>
+            </controls:FillDataGrid.CellStyle>
+
+            <controls:FillDataGrid.Columns>
+                <!-- 日志ID: 权重 0.2 居中对齐 -->
                 <DataGridTextColumn 
-                    Header="用户ID" 
-                    Binding="{Binding UserId}" 
+                    Header="日志ID" 
+                    Binding="{Binding LogId}" 
                     Width="0.2*"
                     ElementStyle="{StaticResource DataGridCellCenterStyle}"/>
 
-                <!-- 用户名: 权重 0.1 -->
+                <!-- 用户ID: 权重 0.2 居中对齐 -->
+                <DataGridTextColumn 
+                    Header="用户ID" 
+                    Binding="{Binding UserId, StringFormat='{}{0:D8}'}" 
+                    Width="0.2*"
+                    ElementStyle="{StaticResource DataGridCellCenterStyle}"/>
+
+                <!-- 用户名: 权重 0.1 居中对齐（核心修改） -->
                 <DataGridTextColumn 
                     Header="用户名" 
                     Binding="{Binding Username}" 
-                    Width="0.1*"/>
+                    Width="0.1*"
+                    ElementStyle="{StaticResource DataGridCellCenterStyle}"/>
 
-                <!-- 用户行为: 权重 0.4 -->
+                <!-- 用户行为: 权重 0.4 居中对齐（核心修改） -->
                 <DataGridTextColumn 
                     Header="用户行为" 
                     Binding="{Binding Action}" 
-                    Width="0.4*"/>
+                    Width="0.4*"
+                    ElementStyle="{StaticResource DataGridCellCenterStyle}"/>
 
-                <!-- 时间戳: 权重 0.2 -->
+                <!-- 时间戳: 权重 0.2 居中对齐 -->
                 <DataGridTextColumn 
                     Header="时间戳" 
                     Binding="{Binding Timestamp, StringFormat='yyyy-MM-dd HH:mm:ss'}" 
-                    Width="0.2*"/>
-            </DataGrid.Columns>
-        </DataGrid>
+                    Width="0.2*"
+                    ElementStyle="{StaticResource DataGridCellCenterStyle}"/>
+            </controls:FillDataGrid.Columns>
+        </controls:FillDataGrid>
 
         <!-- 3. 底部分页栏 -->
-        <Border Grid.Row="2" Margin="0,20,0,0" Padding="15,10" Background="#F8F8F8" CornerRadius="5">
+        <Border Grid.Row="2" Margin="0,20,0,0" Padding="15,10" Background="#F5F5F5" CornerRadius="4" BorderThickness="1" BorderBrush="#E0E0E0">
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="Auto"/>
@@ -75,16 +119,12 @@
                     <ColumnDefinition Width="Auto"/>
                 </Grid.ColumnDefinitions>
 
-                <!-- 上一页按钮 -->
                 <Button 
                     Grid.Column="0"
                     Content="上一页" 
                     Command="{Binding PrevPageCommand}"
-                    IsEnabled="{Binding PrevPageCommand.IsActive, FallbackValue=True}"
-                    Width="90" Height="32"
-                    Style="{StaticResource {x:Static ToolBar.ButtonStyleKey}}"/>
+                    Width="90" Height="32"/>
 
-                <!-- 页码显示 (居中) -->
                 <StackPanel Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Center">
                     <TextBlock Text="当前页: " VerticalAlignment="Center"/>
                     <TextBlock Text="{Binding CurrentPage}" FontWeight="Bold" VerticalAlignment="Center" FontSize="14"/>
@@ -92,17 +132,14 @@
                     <TextBlock Text="{Binding TotalPages}" VerticalAlignment="Center"/>
                 </StackPanel>
 
-                <!-- 下一页按钮 -->
                 <Button 
                     Grid.Column="2"
                     Content="下一页" 
                     Command="{Binding NextPageCommand}"
-                    Width="90" Height="32"
-                    Style="{StaticResource {x:Static ToolBar.ButtonStyleKey}}"/>
+                    Width="90" Height="32"/>
             </Grid>
         </Border>
 
-        <!-- 页面加载事件触发 -->
         <i:Interaction.Triggers>
             <i:EventTrigger EventName="Loaded">
                 <i:InvokeCommandAction Command="{Binding LoadedCommand}"/>
