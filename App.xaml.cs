@@ -26,6 +26,7 @@ namespace MyProgram
             containerRegistry.RegisterSingleton<IDailyImageService, DailyImageService>();
             containerRegistry.RegisterSingleton<ICurrentUserService, CurrentUserService>();
             containerRegistry.RegisterSingleton<ILogService, LogService>();
+            containerRegistry.RegisterSingleton<IModbusRtuService, ModbusRtuService>();
 
             containerRegistry.Register<AppDbContext>();
 
@@ -33,6 +34,7 @@ namespace MyProgram
             containerRegistry.RegisterForNavigation<RegisterView>();
             containerRegistry.RegisterForNavigation<DashboardView>();
             containerRegistry.RegisterForNavigation<LogView>();
+            containerRegistry.RegisterForNavigation<ModbusRtuView>();
 
         }
 
