@@ -15,7 +15,9 @@ namespace MyProgram.Interface
 
         // 数据采集
         Task<ushort[]> ReadHoldingRegistersAsync(byte slaveId, ushort startAddress, ushort count);
-        Task WriteSingleRegisterAsync(byte slaveId, ushort address, ushort value);
+
+        // 写入：统一使用 WriteMultipleRegisters，支持单/多个
+        Task WriteRegistersAsync(byte slaveId, ushort startAddress, ushort[] values);
 
         // 事件：用于通知通信日志
         event EventHandler<CommunicationLog> OnLogReceived;

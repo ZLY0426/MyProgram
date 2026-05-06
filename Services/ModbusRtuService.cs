@@ -70,8 +70,8 @@ namespace MyProgram.Services
             {
                 Log("发送", $"读取 从站={slaveId}, 起始地址={startAddress}, 数量={count}");
 
-                // 注意：NModbus 是同步的，我们用 Task.Run 包装以不阻塞 UI
-                var result = await _modbusMaster.ReadHoldingRegistersAsync(slaveId, startAddress, count);
+                var result = await Task.Run(() => _modbusMaster.ReadHoldingRegisters(slaveId, startAddress, count));
+
                 Log("接收", $"收到数据: [{string.Join(", ", result)}]");
                 return result;
             }
@@ -82,17 +82,22 @@ namespace MyProgram.Services
             }
         }
 
-        public async Task WriteSingleRegisterAsync(byte slaveId, ushort address, ushort value)
+        // 修改：统一写入方法，支持单/多个寄存器
+        public async Task WriteRegistersAsync(byte slaveId, ushort startAddress, ushort[] values)
         {
             if (!IsConnected) throw new InvalidOperationException("未连接到设备");
+            if (values == null || values.Length == 0) throw new ArgumentException("写入值不能为空");
 
             try
             {
-                Log("发送", $"写入 从站={slaveId}, 地址={address}, 值={value}");
+                string valueStr = string.Join(", ", values);
+                Log("发送", $"写入 从站={slaveId}, 起始地址={startAddress}, 数量={values.Length}, 值=[{valueStr}]");
 
-                await _modbusMaster.WriteSingleRegisterAsync(slaveId, address, value);
+                // 核心：统一使用 WriteMultipleRegisters
+                // 注意：NModbus 的 WriteMultipleRegisters 完全支持写入单个寄存器
+                await Task.Run(() => _modbusMaster.WriteMultipleRegisters(slaveId, startAddress, values));
 
-                Log("接收", "写入成功");
+                Log("接收", $"写入成功 (数量: {values.Length})");
             }
             catch (Exception ex)
             {

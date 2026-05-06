@@ -27,14 +27,16 @@ namespace MyProgram
             containerRegistry.RegisterSingleton<ICurrentUserService, CurrentUserService>();
             containerRegistry.RegisterSingleton<ILogService, LogService>();
             containerRegistry.RegisterSingleton<IModbusRtuService, ModbusRtuService>();
+            containerRegistry.RegisterSingleton<IModbusTcpService, ModbusTcpService>();
 
             containerRegistry.Register<AppDbContext>();
 
             containerRegistry.RegisterForNavigation<LoginView>();
             containerRegistry.RegisterForNavigation<RegisterView>();
             containerRegistry.RegisterForNavigation<DashboardView>();
-            containerRegistry.RegisterForNavigation<LogView>();
             containerRegistry.RegisterForNavigation<ModbusRtuView>();
+            containerRegistry.RegisterForNavigation<ModbusTcpView>();
+            containerRegistry.RegisterForNavigation<LogView>();
 
         }
 
